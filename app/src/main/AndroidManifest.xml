@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="com.symbol.emdk.permission.EMDK" />
+
+    <uses-permission android:name="com.zebra.securestoragemanager.securecontentprovider.PERMISSION.WRITE"/>
+    <uses-permission android:name="com.zebra.securestoragemanager.securecontentprovider.PERMISSION.READ"/>
+
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <permission
+        android:name="com.ndzl.zph.provider.PERMISSION.READ"
+        android:protectionLevel="normal" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ZPH"
+        tools:targetApi="31">
+
+        <uses-library
+            android:name="com.symbol.emdk"
+            android:required="false" />
+
+        <activity
+            android:name="com.ndzl.zph.MainActivity"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.USER_UNLOCKED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+
+        <receiver android:name="com.ndzl.zph.IntentsReceiver"
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="true">
+<!--            <intent-filter>
+                <action android:name="com.ndzl.DW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>-->
+
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+<!--        <receiver android:name=".UserUnlockedIntentReceiver"
+            android:directBootAware="true"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.USER_UNLOCKED" />
+            </intent-filter>
+        </receiver>-->
+
+        <provider
+            android:name="com.ndzl.zph.OriginatingAppFileProvider"
+            android:authorities="com.ndzl.zph.provider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            android:readPermission="com.ndzl.zph.provider.PERMISSION.READ">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
+        <service
+            android:name="com.ndzl.zph.BA_FGS"
+            android:exported="true"
+            android:directBootAware="true"
+            android:enabled="true"
+            >
+            <intent-filter>
+                <action android:name="com.ndzl.DW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+
+
+
+    </application>
+
+    <queries>
+        <provider android:authorities="com.zebra.securestoragemanager.securecontentprovider"/>
+        <package android:name="com.zebra.securestoragemanager" />
+
+        <package android:name="com.symbol.datawedge" />
+        <package android:name="com.symbol.emdk.emdkservice" />
+    </queries>
+
+</manifest>
