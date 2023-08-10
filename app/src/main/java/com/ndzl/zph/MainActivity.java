@@ -9,6 +9,8 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -186,6 +188,15 @@ public class MainActivity extends AppCompatActivity {
             e.getMessage();
         }
 
+
+        String packageName = this.getPackageName();
+        PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+        if( !pm.isIgnoringBatteryOptimizations(packageName) ){
+            Intent intent = new Intent();
+            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + packageName));
+            startActivity(intent);
+        }
 
     }
 

@@ -1,10 +1,13 @@
 package com.ndzl.zph;
 
+import static android.content.Context.POWER_SERVICE;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -35,6 +38,7 @@ public class IntentsReceiver extends BroadcastReceiver{
         fos.close();
     }
 
+    public static PowerManager.WakeLock wakeLock;
     @Override
     public void onReceive(final Context context, Intent intent) {
 
@@ -74,6 +78,11 @@ public class IntentsReceiver extends BroadcastReceiver{
             //starting a FGS after LOCKED_BOOT_COMPLETED receive is a valid exception!
             //After the device reboots and receives the ACTION_BOOT_COMPLETED, ACTION_LOCKED_BOOT_COMPLETED, or ACTION_MY_PACKAGE_REPLACED intent action in a broadcast receiver.
             // Constant Value: "android.intent.action.LOCKED_BOOT_COMPLETED"
+
+            PowerManager powerManager = (PowerManager) context.getSystemService(POWER_SERVICE);
+            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ZPH::WLTag");
+            wakeLock.acquire(); //wakeLock.acquire(10*60*1000L /*10 minutes*/);
+
             Intent fgsi = new Intent(context.getApplicationContext(), BA_FGS.class);
             try {
                 context.getApplicationContext().startForegroundService(fgsi);

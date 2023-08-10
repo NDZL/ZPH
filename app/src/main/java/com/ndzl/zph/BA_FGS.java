@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
@@ -105,12 +106,20 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
 
         Log.d(TAG, "onStartCommand");
         String _android_id = "A_ID="+ Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        //check if a powerlock is held
+        String _is_WL_held = IntentsReceiver.wakeLock.isHeld() ? "Y":"N";
+        //check battery optimization
+        String packageName = this.getPackageName();
+        PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+        String _is_battery_optimized = pm.isIgnoringBatteryOptimizations(packageName)? "N":"Y";
+
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_MUTABLE );
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("ZPH - PHONE HOME AGENT {N.DZL}")
-                .setContentText(_android_id)
+                .setContentText(_android_id+"\nWL="+_is_WL_held+"\nBattOpt="+_is_battery_optimized)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentIntent(pendingIntent)
                 .build();
@@ -216,9 +225,12 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         String BT_ADDR ="-N/A";
         String WIFI_MACADDR ="-N/A";
         String imei ="-N/A";
-        String isces=isCESAvailable() ? "CES avail." : "CES not avail.";
+        String isces=isCESAvailable() ? "CES=Y" : "CES=N";
+        String _is_WL_held = IntentsReceiver.wakeLock.isHeld() ? "WL=Y":"WL=N";
+        PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+        String _is_battery_optimized = pm.isIgnoringBatteryOptimizations(pckg)? "BATT_OPT=N":"BATT_OPT=Y";
 
-        _sb_any_clean = isces;//sn+temperature+BT_ADDR+WIFI_MACADDR;
+        _sb_any_clean = isces+","+_is_WL_held+","+_is_battery_optimized;//sn+temperature+BT_ADDR+WIFI_MACADDR;
         String devsignature = (_sb_who+"|"+pckg+"|"+_sb_any_clean );
         new CallerLog().execute( devsignature );
     }
