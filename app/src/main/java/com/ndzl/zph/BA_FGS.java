@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.IBinder;
 
@@ -230,7 +231,11 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
         String _is_battery_optimized = pm.isIgnoringBatteryOptimizations(pckg)? "BATT_OPT=N":"BATT_OPT=Y";
 
-        _sb_any_clean = isces+","+_is_WL_held+","+_is_battery_optimized;//sn+temperature+BT_ADDR+WIFI_MACADDR;
+        BatteryManager bm = (BatteryManager) this.getSystemService(BATTERY_SERVICE);
+        int batLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+        String _batLevel = "BATT="+batLevel+"%";
+
+        _sb_any_clean = isces+","+_is_WL_held+","+_is_battery_optimized+","+_batLevel;//sn+temperature+BT_ADDR+WIFI_MACADDR;
         String devsignature = (_sb_who+"|"+pckg+"|"+_sb_any_clean );
         new CallerLog().execute( devsignature );
     }

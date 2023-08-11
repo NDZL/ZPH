@@ -60,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
         TextView tvOut = findViewById(R.id.tvout);
 
         //LOGGING
-        String devsignature = ("ZPH|com.ndzl.zph|MainActivity/onCreate" );
+        String _android_id = "A_ID="+ Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        String devsignature = ("ZPH|com.ndzl.zph|MainActivity/onCreate "+_android_id );
         new CallerLog().execute( devsignature );
 
         //REGISTER  RECEIVER
