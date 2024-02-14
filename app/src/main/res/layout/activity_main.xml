@@ -11,14 +11,23 @@
     android:layout_height="wrap_content"
     tools:context="com.ndzl.zph.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TARGET ELEVATOR"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:id="@+id/tvout" />
-</LinearLayout>
+
+        <Button
+            android:id="@+id/buttonOne"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LIST ALL PACKAGES" />
+
+        <TextView
+            android:id="@+id/tvout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ZPH - ZEBRA PHONES HOME"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </LinearLayout>
 </ScrollView>

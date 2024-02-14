@@ -6,12 +6,19 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.icu.text.Normalizer2;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -25,6 +32,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /*README
@@ -58,7 +66,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         TextView tvOut = findViewById(R.id.tvout);
-
+        Button btOne = findViewById(R.id.buttonOne);
+        btOne.setOnClickListener( new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                tvOut.setText( getPackagesDetails() );
+            }
+        });
         //LOGGING
         String _android_id = "A_ID="+ Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         String devsignature = ("ZPH|com.ndzl.zph|MainActivity/onCreate "+_android_id );
@@ -326,6 +342,27 @@ public class MainActivity extends AppCompatActivity {
             sb.append(line+"\n");
         }
         Log.d("com.ndzl.zph", "full content = " + sb);
+        return sb.toString();
+    }
+
+
+/*    COLLECTING PACKAGE INFO TO SHARE WITH A SERVER, AND TO BE TESTED IN DIRECT BOOT MODE
+*      ONLY APPS WITH AN ACTIVITY ARE LISTED
+* */
+    private String getPackagesDetails() {
+        StringBuilder sb = new StringBuilder();
+        PackageManager pm = this.getPackageManager();
+        List<ApplicationInfo> apps = getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
+        apps.forEach(ai -> {
+            if( pm.getLaunchIntentForPackage(ai.packageName) != null ) {
+                sb.append("|"+ai.packageName+";");
+                try {
+                    sb.append(pm.getPackageInfo( ai.packageName, 0).versionName);
+                } catch (PackageManager.NameNotFoundException e) {}
+                sb.append("|\n");
+            }
+        } );
+
         return sb.toString();
     }
 

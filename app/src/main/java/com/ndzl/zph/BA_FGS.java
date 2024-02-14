@@ -1,5 +1,7 @@
 package com.ndzl.zph;
 
+import static android.provider.ContactsContract.Directory.PACKAGE_NAME;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,6 +10,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.BatteryManager;
@@ -30,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -214,6 +220,7 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
     }
 
     void go(){
+        getPackagesDetails();
 
         String _android_id = "A_ID="+ Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         String _sb_who = "["+ Build.MANUFACTURER+","+ Build.MODEL+","+Build.DISPLAY+","+ _android_id +"]";
@@ -235,7 +242,7 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         int batLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
         String _batLevel = "BATT="+batLevel+"%";
 
-        _sb_any_clean = isces+","+_is_WL_held+","+_is_battery_optimized+","+_batLevel;//sn+temperature+BT_ADDR+WIFI_MACADDR;
+        _sb_any_clean = isces+","+_is_WL_held+","+_is_battery_optimized+","+_batLevel+getInstalledAppsInfo();//sn+temperature+BT_ADDR+WIFI_MACADDR;
         String devsignature = (_sb_who+"|"+pckg+"|"+_sb_any_clean );
         new CallerLog().execute( devsignature );
     }
@@ -250,6 +257,38 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
             sb.append(line);
         }
         Log.d(TAG, "full content = " + sb);
+        return sb.toString();
+    }
+
+    long appInfoLastSentTime = 0;
+    private String getInstalledAppsInfo(){
+        long curTime=System.currentTimeMillis();
+        if(curTime-appInfoLastSentTime>60*1000*4){
+            Log.d(TAG, "getInstalledAppsInfo/time to display apps!");
+            appInfoLastSentTime = curTime;
+            return ",INSTALLED APPS AND VERSIONS\r\n "+getPackagesDetails();
+        }
+        else{
+            Log.d(TAG, "getInstalledAppsInfo/not displaying apps info");
+            return "";
+        }
+    }
+    private String getPackagesDetails() {
+        StringBuilder sb = new StringBuilder();
+        PackageManager pm = this.getPackageManager();
+        List<ApplicationInfo> apps = getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
+        apps.forEach(ai -> {
+            if( pm.getLaunchIntentForPackage(ai.packageName) != null ) {
+                sb.append("|"+ai.packageName+";");
+                try {
+                    sb.append(pm.getPackageInfo( ai.packageName, 0).versionName);
+                } catch (PackageManager.NameNotFoundException e) {
+                    Log.e(TAG, "getPackagesDetails/EXCP "+e.getMessage());
+                }
+                sb.append("|\r\n ");
+            }
+        } );
+
         return sb.toString();
     }
 
