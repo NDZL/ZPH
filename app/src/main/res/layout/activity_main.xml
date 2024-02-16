@@ -18,6 +18,17 @@
             android:layout_height="wrap_content"
             android:text="LIST ALL PACKAGES" />
 
+        <Button
+            android:id="@+id/buttonTwo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DPS STRESS TEST (APPEND)" />
+        <Button
+            android:id="@+id/buttonThree"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DPS STRESS TEST (CLEAN UP)" />
+
         <TextView
             android:id="@+id/tvout"
             android:layout_width="wrap_content"

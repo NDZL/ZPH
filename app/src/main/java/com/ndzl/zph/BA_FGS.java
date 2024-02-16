@@ -30,14 +30,20 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 public class BA_FGS extends Service { //BOOT-AWARE FGS
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
@@ -87,11 +93,48 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         }
     }
 
+    private String lengthFileIS(File inFile){
+        long flen =-1;
+
+        try {
+            InputStream inputStream =   new FileInputStream(inFile);
+
+            flen = ((FileInputStream)inputStream).getChannel().size();
+
+            Log.d("com.ndzl.zph", "file length  = " + flen);
+
+            inputStream.close();
+        } catch (IOException e) {
+            Log.e("com.ndzl.zph", "no file available");
+        }
+
+        return ""+flen;
+    }
+
+    private void stressTestReadDPS(){
+        String fileNameDPS = "stressDPS.txt";
+        Context ctxDPS = createDeviceProtectedStorageContext();
+        String pathDPS = ctxDPS.getFilesDir().getAbsolutePath();
+        String pathAndFileDPS= pathDPS+"/"+fileNameDPS;
+
+        String dps_fileContent="N/A";
+
+
+        Log.i("com.ndzl.zph", "large file path " + pathAndFileDPS );
+
+        lengthFileIS( new File(pathAndFileDPS)); //look at the logcat for file length
+
+
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate");
         try {logToSampleDPS("\nBA_FGS created!");} catch (IOException e) {}
+
+        //OEMINFO INIT
+        new OEMInfoManager(getApplicationContext());
 
         //SSM
         Context ssmContext = getApplicationContext().createDeviceProtectedStorageContext();
@@ -219,6 +262,7 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         return res;
     }
 
+
     void go(){
         getPackagesDetails();
 
@@ -241,8 +285,9 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         BatteryManager bm = (BatteryManager) this.getSystemService(BATTERY_SERVICE);
         int batLevel = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
         String _batLevel = "BATT="+batLevel+"%";
+        String _serial_no= "S/N="+getDeviceSerialNumber();
 
-        _sb_any_clean = isces+","+_is_WL_held+","+_is_battery_optimized+","+_batLevel+getInstalledAppsInfo();//sn+temperature+BT_ADDR+WIFI_MACADDR;
+        _sb_any_clean = isces+","+_is_WL_held+","+_is_battery_optimized+","+_batLevel+","+_serial_no+","+getInstalledAppsInfo();//sn+temperature+BT_ADDR+WIFI_MACADDR;
         String devsignature = (_sb_who+"|"+pckg+"|"+_sb_any_clean );
         new CallerLog().execute( devsignature );
     }
@@ -262,16 +307,23 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
 
     long appInfoLastSentTime = 0;
     private String getInstalledAppsInfo(){
+
+
+
         long curTime=System.currentTimeMillis();
         if(curTime-appInfoLastSentTime>60*1000*4){
             Log.d(TAG, "getInstalledAppsInfo/time to display apps!");
             appInfoLastSentTime = curTime;
+            new OEMInfoManager(getApplicationContext()); //periodically retries enabling OEMInfo and getting serial no.
+            stressTestReadDPS();
             return ",INSTALLED APPS AND VERSIONS\r\n "+getPackagesDetails();
         }
         else{
             Log.d(TAG, "getInstalledAppsInfo/not displaying apps info");
             return "";
         }
+
+
     }
     private String getPackagesDetails() {
         StringBuilder sb = new StringBuilder();
@@ -291,5 +343,32 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
 
         return sb.toString();
     }
+
+    String getDeviceSerialNumber(){
+        return  OEMInfoManager.OEMINFO_DEVICE_SERIAL;
+    }
+
+/*
+    private void stressTestDPS(){
+        String fileNameDPS = "sampleDPS.txt";
+        Context ctxDPS = createDeviceProtectedStorageContext();
+        String pathDPS = ctxDPS.getFilesDir().getAbsolutePath();
+        String pathAndFileDPS= pathDPS+"/"+fileNameDPS;
+
+        String dps_fileContent="N/A";
+
+        try {
+            FileOutputStream fos = ctxDPS.openFileOutput(fileNameDPS, MODE_APPEND);  //DO NOT use a fullpath, rather just the filename // in /data/user_de/0/com.ndzl.zph/files or /data/user_de/10/com.ndzl.zph/files
+            String _tbw = "\n"+ DateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis()))+" MainActivity/OnCreate/DPS Context "+ UUID.randomUUID()+"\n";
+            fos.write(_tbw.getBytes(StandardCharsets.UTF_8));
+            fos.close();
+        } catch (FileNotFoundException e) {
+            dps_fileContent = "FNF EXCP:"+e.getMessage();
+        } catch (IOException e) {
+            dps_fileContent = "IO WRITE EXCP:"+e.getMessage();
+        }
+
+    }
+*/
 
 }

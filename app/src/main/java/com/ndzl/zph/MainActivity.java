@@ -29,8 +29,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -60,10 +62,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    byte[] ba;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        new OEMInfoManager(getApplicationContext());
 
         TextView tvOut = findViewById(R.id.tvout);
         Button btOne = findViewById(R.id.buttonOne);
@@ -72,7 +78,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
-                tvOut.setText( getPackagesDetails() );
+                tvOut.setText( "S/N="+OEMInfoManager.OEMINFO_DEVICE_SERIAL +"\n"+  getPackagesDetails() );
+            }
+        });
+        Button btTwo = findViewById(R.id.buttonTwo);
+        btTwo.setOnClickListener( new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                stressTestDPS();
+            }
+        });
+
+        Button btThree = findViewById(R.id.buttonThree);
+        btThree.setOnClickListener( new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                cleanUpDPS();
             }
         });
         //LOGGING
@@ -96,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         //Log.d("com.ndzl.zph", "==REGISTERING RECEIVER! 000");
 
         // creating and reading a file in the Device Encrypted Storage
-        String fileNameDPS = "sampleDPS.txt";
+/*        String fileNameDPS = "sampleDPS.txt";
         Context ctxDPS = createDeviceProtectedStorageContext();
         String pathDPS = ctxDPS.getFilesDir().getAbsolutePath();
         String pathAndFileDPS= pathDPS+"/"+fileNameDPS;
@@ -119,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
             dps_fileContent = readFile(ctxDPS, fileNameDPS);
         } catch (IOException e) {
             dps_fileContent = "IO READ EXCP:"+e.getMessage();
-        }
+        }*/
 
        // DevicePolicyManager dmp = new DevicePolicyManager();
         // int ses = dmp.getStorageEncryptionStatus();
@@ -128,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
         //Toast.makeText(getApplicationContext(), ""+ pathAndFileDPS, Toast.LENGTH_LONG).show();
 
         //--then creating and reading a file in the Credential Encrypted Storage
+/*
         String fileNameCES = "sampleCES.txt";
         Context ctxCES = this;
         String pathCES = ctxCES.getFilesDir().getAbsolutePath();
@@ -158,11 +184,13 @@ public class MainActivity extends AppCompatActivity {
 
 
         tvOut.setText("DEVICE PROTECTED STORAGE\nPrinted at "+DateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis()))+"\nFILE:\n"+pathAndFileDPS+"\nCONTENT:\n"+dps_fileContent+"\n\nCREDENTIAL ENCRYPTED STORAGE\nFILE:\n"+pathAndFileCES+"\nCONTENT:\n"+ces_fileContent+"\n");
+*/
 
 
         ///////////////////////////////////////////
         //TESTING A FILE PROVIDER AS A WAYTO SHARE A FILE TO SSM
 
+/*
         try {
             File cachePath = new File(getCacheDir(), ".");
             cachePath.mkdir();
@@ -185,7 +213,8 @@ public class MainActivity extends AppCompatActivity {
             shareLocalFileProviderToSSM(cacheFileContentUri, "com.ndzl.sst_companionapp/AAA.txt", "com.ndzl.sst_companionapp", "");
 
 
-            /*
+            */
+/*
             //FOLLOWING CODE FOR SHARING A FILE FROM THE LOCAL FILEPROVIDER TO A SPECIFIC APP AND LET IT CONSUME IT
             Intent intent = new Intent().setClassName("com.ndzl.sst_companionapp", "com.ndzl.sst_companionapp.MainActivity");
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -193,7 +222,8 @@ public class MainActivity extends AppCompatActivity {
             ClipData clipData = new ClipData(new ClipDescription("Meshes", new String[]{ClipDescription.MIMETYPE_TEXT_URILIST}), new ClipData.Item(cacheFileContentUri));
             intent.setClipData(clipData);
             startActivity(intent); //this works fine - target app can access this fileprovider!
-            */
+            *//*
+
 
 
 
@@ -204,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.getMessage();
         }
+*/
 
 
         String packageName = this.getPackageName();
@@ -214,6 +245,12 @@ public class MainActivity extends AppCompatActivity {
             intent.setData(Uri.parse("package:" + packageName));
             startActivity(intent);
         }
+
+
+        ba = new byte[1024*1024*200];
+        Arrays.fill(ba, (byte)64);
+
+
 
     }
 
@@ -326,9 +363,12 @@ public class MainActivity extends AppCompatActivity {
         while ((line = bufferedReader.readLine()) != null) {
             sb.append(line+"\n");
         }
-        Log.d("com.ndzl.zph", "full content = " + sb);
+        Log.d("com.ndzl.zph", "full content = " + sb.toString());
+        bufferedReader.close();
+
         return sb.toString();
     }
+
 
     private String readFileIS(File inFile) throws IOException {
         InputStream inputStream =   new FileInputStream(inFile);
@@ -341,8 +381,23 @@ public class MainActivity extends AppCompatActivity {
         while ((line = bufferedReader.readLine()) != null) {
             sb.append(line+"\n");
         }
-        Log.d("com.ndzl.zph", "full content = " + sb);
+       // Log.d("com.ndzl.zph", "full content = " + sb.toString());
+       Log.d("com.ndzl.zph", "file length  = " + ((FileInputStream)inputStream).getChannel().size() );
+        bufferedReader.close();
+
         return sb.toString();
+    }
+
+    private String lengthFileIS(File inFile) throws IOException {
+        InputStream inputStream =   new FileInputStream(inFile);
+
+        long flen = ((FileInputStream)inputStream).getChannel().size();
+
+        Log.d("com.ndzl.zph", "file length  = " + flen);
+
+        inputStream.close();
+
+        return ""+flen;
     }
 
 
@@ -364,6 +419,48 @@ public class MainActivity extends AppCompatActivity {
         } );
 
         return sb.toString();
+    }
+
+    private void stressTestDPS(){
+        String fileNameDPS = "stressDPS.txt";
+        Context ctxDPS = createDeviceProtectedStorageContext();
+        String pathDPS = ctxDPS.getFilesDir().getAbsolutePath();
+        String pathAndFileDPS= pathDPS+"/"+fileNameDPS;
+
+        String dps_fileContent="N/A";
+
+
+
+        try {
+
+            FileOutputStream fos = ctxDPS.openFileOutput(fileNameDPS, MODE_APPEND);  //DO NOT use a fullpath, rather just the filename // in /data/user_de/0/com.ndzl.zph/files or /data/user_de/10/com.ndzl.zph/files
+            //String _tbw = "\n"+ DateFormat.getDateTimeInstance().format(new Date(System.currentTimeMillis()))+" MainActivity/OnCreate/DPS Context "+ UUID.randomUUID()+"\n";
+            String _tbw = ba.toString();
+/*            RandomAccessFile fos = new RandomAccessFile(fileNameDPS, "rw");
+            fos.setLength(1024 * 1024 * 1024);*/
+            fos.write(ba);
+            fos.close();
+        } catch (FileNotFoundException e) {
+            dps_fileContent = "FNF EXCP:"+e.getMessage();
+            Log.e("com.ndzl.zph", "stressTestDPS FNF " + dps_fileContent);
+        } catch (IOException e) {
+            dps_fileContent = "IO WRITE EXCP:"+e.getMessage();
+            Log.e("com.ndzl.zph", "stressTestDPS IOE " + dps_fileContent);
+        }
+
+        Log.i("com.ndzl.zph", "large file path " + pathAndFileDPS );
+        try {
+            lengthFileIS( new File(pathAndFileDPS)); //look at the logcat for file length
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void cleanUpDPS(){
+        String fileNameDPS = "stressDPS.txt";
+        Context ctxDPS = createDeviceProtectedStorageContext();
+        ctxDPS.deleteFile(fileNameDPS);
     }
 
 }
