@@ -18,13 +18,15 @@ import com.symbol.emdk.ProfileManager;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 
 public class OEMInfoManager implements EMDKManager.EMDKListener  {
 
-    public static volatile String OEMINFO_DEVICE_SERIAL ="N/A";
+    private String OEMINFO_DEVICE_SERIAL ="N/A";
 
     String TAG = "DeviceID";
     String URI_SERIAL = "content://oem_info/oem.zebra.secure/build_serial";
@@ -60,7 +62,7 @@ public class OEMInfoManager implements EMDKManager.EMDKListener  {
         Log.d(TAG, "OEMInfoManager constructor called");
         RetrieveOEMInfo(Uri.parse(URI_SERIAL), false);       //  Build.getSerial()
 
-        if(OEMINFO_DEVICE_SERIAL.equals("N/A")) {
+        if(OEMINFO_DEVICE_SERIAL.length()<5) {
             Log.d(TAG, "OEMInfoManager starting EMDK to authorize OEMInfo access");
             EMDKResults results = EMDKManager.getEMDKManager(context.getApplicationContext(), this);
             if (results.statusCode == EMDKResults.STATUS_CODE.SUCCESS) {
@@ -69,7 +71,22 @@ public class OEMInfoManager implements EMDKManager.EMDKListener  {
                 //EMDKManager object creation failed
             }
         }
+        else{
+            try {
+                saveDataToDPS("uniqueIDs.txt", OEMINFO_DEVICE_SERIAL);
+            } catch (IOException e) {
+                Log.e("OEMInfoManager/storeDataForDirectBoot", "Error: " + e.getMessage());
+            }
+        }
 
+    }
+
+    void saveDataToDPS(String file, String _tbw)  throws IOException {
+        Context ctxDPS = context.getApplicationContext().createDeviceProtectedStorageContext();
+        String _wout = _tbw ;
+        FileOutputStream fos = ctxDPS.openFileOutput(file, Context.MODE_PRIVATE);
+        fos.write(_wout.getBytes(StandardCharsets.UTF_8));
+        fos.close();
     }
 
 
@@ -83,7 +100,7 @@ public class OEMInfoManager implements EMDKManager.EMDKListener  {
             String errorMsg = "Error: This app does not have access to call OEM service. " +
                     "Please assign access to " + uri + " through MX.  See ReadMe for more information";
             Log.d(TAG, errorMsg);
-            OEMINFO_DEVICE_SERIAL = "N/A"; //vip, do not change the literal N/A
+            //OEMINFO_DEVICE_SERIAL = "N/A"; //vip, do not change the literal N/A
             return;
         }
         Log.i(TAG, "Records available =" + cursor.getCount());
@@ -95,7 +112,7 @@ public class OEMInfoManager implements EMDKManager.EMDKListener  {
                 Log.d(TAG, errorMsg);
                 if (isIMEI)
                     errorMsg = "Error: Could not find IMEI.  Is device WAN capable?";
-                OEMINFO_DEVICE_SERIAL = "N/A"; //vip, do not change the literal N/A
+                //OEMINFO_DEVICE_SERIAL = "N/A"; //vip, do not change the literal N/A
             }
             else{
                 for (int i = 0; i < cursor.getColumnCount(); i++) {

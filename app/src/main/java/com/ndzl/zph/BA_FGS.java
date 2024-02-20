@@ -1,7 +1,5 @@
 package com.ndzl.zph;
 
-import static android.provider.ContactsContract.Directory.PACKAGE_NAME;
-
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,7 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.BatteryManager;
@@ -29,21 +26,18 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 
 public class BA_FGS extends Service { //BOOT-AWARE FGS
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
@@ -80,11 +74,20 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         fos.close();
     }
 
+/*    void saveDataToDPS(String file, String _tbw)  throws IOException {
+        Context ctxDPS = getApplicationContext().createDeviceProtectedStorageContext();
+        String _wout = _tbw ;
+        FileOutputStream fos = ctxDPS.openFileOutput(file, Context.MODE_APPEND);
+        fos.write(_wout.getBytes(StandardCharsets.UTF_8));
+        fos.close();
+    }*/
+
     boolean isCESAvailable(){
 
         try {
             FileOutputStream fos = getApplicationContext().openFileOutput("probeCES.txt", Context.MODE_APPEND);
-            String _wout = "CES PROBED";
+            //String _wout = "CES PROBED";
+            String _wout = "";
             fos.write(_wout.getBytes(StandardCharsets.UTF_8));
             fos.close();
             return true;
@@ -124,6 +127,32 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
 
         lengthFileIS( new File(pathAndFileDPS)); //look at the logcat for file length
 
+
+    }
+
+    private String readDPS(String fileNameDPS){
+        Context ctxDPS = createDeviceProtectedStorageContext();
+        String pathDPS = ctxDPS.getFilesDir().getAbsolutePath();
+        String pathAndFileDPS= pathDPS+"/"+fileNameDPS;
+
+        File inFile = new File(pathAndFileDPS);
+        StringBuilder sb = new StringBuilder();
+        try {
+            InputStreamReader isr = new InputStreamReader( new FileInputStream(inFile) );
+            BufferedReader bufferedReader = new BufferedReader(isr);
+
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line);
+            }
+            bufferedReader.close();
+
+            Log.d("com.ndzl.zph", "file context  = " + sb);
+
+        } catch (IOException e) {
+            Log.e("readDPS", "no file available");
+        }
+        return sb.toString();
 
     }
 
@@ -190,6 +219,19 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
 
         return super.onStartCommand(intent, flags, startId);
     }
+
+/*    private void storeDataForDirectBoot() {
+        try {
+            String sn = getDeviceSerialNumber();
+            if(sn.length()>5)
+                saveDataToDPS("uniqueIDs.txt", sn);
+
+            saveDataToDPS("appsDetails.txt", getInstalledAppsInfo());
+        } catch (IOException e) {
+            Log.e("storeDataForDirectBoot", "Error: " + e.getMessage());
+        }
+
+    }*/
 
     @Nullable
     @Override
@@ -301,6 +343,7 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         while ((line = bufferedReader.readLine()) != null) {
             sb.append(line);
         }
+        bufferedReader.close();
         Log.d(TAG, "full content = " + sb);
         return sb.toString();
     }
@@ -345,7 +388,7 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
     }
 
     String getDeviceSerialNumber(){
-        return  OEMInfoManager.OEMINFO_DEVICE_SERIAL;
+        return  readDPS( "uniqueIDs.txt" );
     }
 
 /*

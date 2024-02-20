@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
-                tvOut.setText( "S/N="+OEMInfoManager.OEMINFO_DEVICE_SERIAL +"\n"+  getPackagesDetails() );
+               // tvOut.setText( "S/N="+OEMInfoManager.OEMINFO_DEVICE_SERIAL +"\n"+  getPackagesDetails() );
             }
         });
         Button btTwo = findViewById(R.id.buttonTwo);
