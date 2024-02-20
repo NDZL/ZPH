@@ -11,7 +11,7 @@ android {
         minSdk 29
         targetSdk 33
         versionCode 1
-        versionName "2.4-DATA SAVED TO DPS WHILE IN CES"
+        versionName "2.41-DATA SAVED TO DPS WHILE IN CES"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

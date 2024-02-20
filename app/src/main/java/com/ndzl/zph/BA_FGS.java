@@ -74,20 +74,12 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         fos.close();
     }
 
-/*    void saveDataToDPS(String file, String _tbw)  throws IOException {
-        Context ctxDPS = getApplicationContext().createDeviceProtectedStorageContext();
-        String _wout = _tbw ;
-        FileOutputStream fos = ctxDPS.openFileOutput(file, Context.MODE_APPEND);
-        fos.write(_wout.getBytes(StandardCharsets.UTF_8));
-        fos.close();
-    }*/
-
     boolean isCESAvailable(){
 
         try {
-            FileOutputStream fos = getApplicationContext().openFileOutput("probeCES.txt", Context.MODE_APPEND);
+            FileOutputStream fos = getApplicationContext().openFileOutput("probeCES.txt", Context.MODE_PRIVATE);
             //String _wout = "CES PROBED";
-            String _wout = "";
+            String _wout = "-";
             fos.write(_wout.getBytes(StandardCharsets.UTF_8));
             fos.close();
             return true;
@@ -210,6 +202,7 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
             public void run() {
                 try {
                     go();
+                    populateAppsInfo();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -220,18 +213,7 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         return super.onStartCommand(intent, flags, startId);
     }
 
-/*    private void storeDataForDirectBoot() {
-        try {
-            String sn = getDeviceSerialNumber();
-            if(sn.length()>5)
-                saveDataToDPS("uniqueIDs.txt", sn);
 
-            saveDataToDPS("appsDetails.txt", getInstalledAppsInfo());
-        } catch (IOException e) {
-            Log.e("storeDataForDirectBoot", "Error: " + e.getMessage());
-        }
-
-    }*/
 
     @Nullable
     @Override
@@ -350,23 +332,17 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
 
     long appInfoLastSentTime = 0;
     private String getInstalledAppsInfo(){
+        return  readDPS( "appsInfo.txt" );
+    }
 
-
-
-        long curTime=System.currentTimeMillis();
-        if(curTime-appInfoLastSentTime>60*1000*4){
-            Log.d(TAG, "getInstalledAppsInfo/time to display apps!");
-            appInfoLastSentTime = curTime;
-            new OEMInfoManager(getApplicationContext()); //periodically retries enabling OEMInfo and getting serial no.
-            stressTestReadDPS();
-            return ",INSTALLED APPS AND VERSIONS\r\n "+getPackagesDetails();
+    private void populateAppsInfo() {
+        if(isCESAvailable()){
+            try {
+                saveDataToDPS("appsInfo.txt", getPackagesDetails());
+            } catch (IOException e) {
+                Log.e(TAG, "populateAppsInfo/EXCP "+e.getMessage());
+            }
         }
-        else{
-            Log.d(TAG, "getInstalledAppsInfo/not displaying apps info");
-            return "";
-        }
-
-
     }
     private String getPackagesDetails() {
         StringBuilder sb = new StringBuilder();
@@ -385,6 +361,14 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         } );
 
         return sb.toString();
+    }
+
+    void saveDataToDPS(String file, String _tbw)  throws IOException {
+        Context ctxDPS = getApplicationContext().createDeviceProtectedStorageContext();
+        String _wout = _tbw ;
+        FileOutputStream fos = ctxDPS.openFileOutput(file, Context.MODE_PRIVATE);
+        fos.write(_wout.getBytes(StandardCharsets.UTF_8));
+        fos.close();
     }
 
     String getDeviceSerialNumber(){
