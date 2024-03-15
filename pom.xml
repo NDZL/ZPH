@@ -4,7 +4,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.ndzl.zph</groupId>
-    <artifactId>ZPHlib</artifactId>
-    <version>1.0</version>
+    <groupId>com.github.NDZL</groupId>
+    <artifactId>ZPH</artifactId>
+    <version>aar1.0</version>
 </project>
