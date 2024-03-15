@@ -26,7 +26,6 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,6 +52,9 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
         });
     }
 
+    public String reverseString(String s){
+        return new StringBuilder(s).reverse().toString();  //codeium!!
+    }
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(

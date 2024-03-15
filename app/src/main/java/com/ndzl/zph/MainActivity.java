@@ -7,11 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
-import android.icu.text.Normalizer2;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -29,13 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 /*README
 https://developer.android.com/training/articles/direct-boot
