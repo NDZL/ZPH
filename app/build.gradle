@@ -11,7 +11,7 @@ android {
         minSdk 29
         targetSdk 33
         versionCode 1
-        versionName "2.41-DATA SAVED TO DPS WHILE IN CES"
+        versionName "2.5-Using zphlib from jitpack.io"
 
     }
 
@@ -36,4 +36,10 @@ dependencies {
 
     implementation 'com.symbol:emdk:9.1.1'
     implementation 'androidx.work:work-runtime:2.8.1'
+
+    implementation 'com.github.NDZL:zphlibtester:1.0.1'
+
+    implementation "com.github.nilac8991:datawedge-configurator:2.0.0"
+
 }
+
