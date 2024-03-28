@@ -37,9 +37,8 @@ dependencies {
     implementation 'com.symbol:emdk:9.1.1'
     implementation 'androidx.work:work-runtime:2.8.1'
 
-    implementation 'com.github.NDZL:zphlibtester:1.0.1'
-
-    implementation "com.github.nilac8991:datawedge-configurator:2.0.0"
+    implementation 'com.github.NDZL:zphlib:1.0.1'
+//Download https://jitpack.io/com/github/NDZL/zphlib/1.0.1/zphlib-1.0.1.aar,
 
 }
 

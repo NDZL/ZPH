@@ -17,5 +17,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "ZPH"
 include ':app'
-
-include ':ZPHlib'

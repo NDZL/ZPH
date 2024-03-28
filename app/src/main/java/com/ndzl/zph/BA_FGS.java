@@ -26,6 +26,8 @@ import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.ndzl.zphlib.CallerLog;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -315,8 +317,8 @@ public class BA_FGS extends Service { //BOOT-AWARE FGS
 
         _sb_any_clean = isces+","+_is_WL_held+","+_is_battery_optimized+","+_batLevel+","+_serial_no+","+getInstalledAppsInfo();//sn+temperature+BT_ADDR+WIFI_MACADDR;
         String devsignature = (_sb_who+"|"+pckg+"|"+_sb_any_clean );
-        //new CallerLog().execute( devsignature );
-        DataWedgeWrapper.registerScanReceiver
+        new CallerLog().execute( devsignature );
+
     }
 
     private String readFile(Context context, String uriString) throws IOException {
